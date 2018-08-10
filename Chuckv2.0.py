@@ -1,16 +1,22 @@
+import requests
+import random
+
 class LolWut(object):
     pass
 
 class ChuckNorrisJokesAPI(object):
     def __init__(self):
-        pass # You set up the new object instance here
+        self = [] # You set up the new object instance here
     
     def get_categories(self):
         """
         Queries the API for a list of categories, and returns a copy
         of the list.
         """
-        pass
+        categories_response = requests.get('https://api.chucknorris.io/jokes/categories')
+        c_js = categories_response.json()
+
+        return (c_js)
 
     def get_random_joke(self, category=None):
         """
@@ -19,15 +25,36 @@ class ChuckNorrisJokesAPI(object):
         If category is present, then we'll only get a random joke from
         the provided category.
         """
-        pass
+        if category:
+            payload = {'category': category}
+            response = requests.get('https://api.chucknorris.io/jokes/random', params=payload)
+            if response.status_code != 200:
+                return False
+        else:
+            response = requests.get('https://api.chucknorris.io/jokes/random')
 
+        r_js = response.json()['value']
+
+        return (r_js)
+ 
     def search_jokes(self, query):
         """
         For now, just do the search and return the raw results!
         We'll make this more powerful in the future! :)
         """
-        pass
+        payload = {'query': query}
+        query = requests.get('https://api.chucknorris.io/jokes/search', params=payload)
+        if query.status_code != 200:
+            print('Sorry, but no matches were found for keyword', query, '. Please try again.')
+        else:
+            return False 
 
+        s_js = query.json()
+        jokes = s_js['result']
+
+        print('\nYour query brought back ', len(jokes), ' results.')
+
+        return (s_js)
 
 def demo_commands():
     chuck = ChuckNorrisJokesAPI()
