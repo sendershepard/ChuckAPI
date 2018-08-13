@@ -45,14 +45,9 @@ class ChuckNorrisJokesAPI(object):
         payload = {'query': query}
         query = requests.get('https://api.chucknorris.io/jokes/search', params=payload)
         if query.status_code != 200:
-            print('Sorry, but no matches were found for keyword', query, '. Please try again.')
-        else:
             return False 
 
         s_js = query.json()
-        jokes = s_js['result']
-
-        print('\nYour query brought back ', len(jokes), ' results.')
 
         return (s_js)
 
