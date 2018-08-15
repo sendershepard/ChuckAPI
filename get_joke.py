@@ -29,31 +29,31 @@ def chuck_categories():
 
        print('\n', cat['value'])
 
-#def chuck_query():
-while True:
-       user_query = input('\nPlease enter a query: ')
-       payload = {'query': user_query}
-       query = requests.get('https://api.chucknorris.io/jokes/search', params=payload)
-       if query.status_code != 200:
-              print('Sorry, but no matches were found for keyword', user_query, '. Please try again.')
-       else:
-              break
+def chuck_query():
+       while True:
+              user_query = input('\nPlease enter a query: ')
+              payload = {'query': user_query}
+              query = requests.get('https://api.chucknorris.io/jokes/search', params=payload)
+              if query.status_code != 200:
+                     print('Sorry, but no matches were found for keyword', user_query, '. Please try again.')
+              else:
+                     break
 
-q_js = query.json()
-jokes = q_js['result']
-print('\nYour query brought back ', len(jokes), ' results.')
+       q_js = query.json()
+       jokes = q_js['result']
+       print('\nYour query brought back ', len(jokes), ' results.')
 
 
-user_input = 'y'
-while (len(jokes)) and (user_input == 'y'):
-       print('We will chose a random joke from the results for you: ')
-       rand = random.randint(0, (len(jokes) - 1))
-       print('\n', jokes[rand]['value'])
-       del jokes[rand]
+       user_input = 'y'
+       while (len(jokes)) and (user_input == 'y'):
+              print('We will chose a random joke from the results for you: ')
+              rand = random.randint(0, (len(jokes) - 1))
+              print('\n', jokes[rand]['value'])
+              del jokes[rand]
 
-       print('\nThere are ', len(jokes), ' left.')
-       user_input = input('\n Do you want to another? "y" or "n"')
-       
-    
+              print('\nThere are ', len(jokes), ' left.')
+              user_input = input('\n Do you want to another? "y" or "n"')
+              
+           
 
 

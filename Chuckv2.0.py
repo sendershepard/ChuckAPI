@@ -6,21 +6,22 @@ class ChuckNorrisJokesAPI(object):
         self.categories_cache = None 
  
     def _get_categories(self):
-
-        print('Hitting the remote API')
+        """
+        Private function that hits the remote API
+        """
+        #print("Hitting the remote API")
         categories_response = requests.get('https://api.chucknorris.io/jokes/categories')
         c_js = categories_response.json()
 
         return (c_js)
 
-    def categories(self): #Public method
+    def categories(self):
         """
-        Queries the API for a list of categories, and returns a copy
+        Public method that queries the API for a list of categories, and returns a copy
         of the list.
         """
         if not self.categories_cache: 
-            self.categories_cache = self._get_categories() #_ means private method
-
+            self.categories_cache = self._get_categories() 
         return self.categories_cache.copy()
 
     def get_random_joke(self, category=None):
@@ -56,6 +57,34 @@ class ChuckNorrisJokesAPI(object):
 
         return (s_js)
 
+class ChuckNorrisJokesMain(object):
+
+    def __init__(self):
+        self.api = ChuckNorrisJokesAPI()
+
+    def run(self):
+
+        print('\nHere are the categories to chose from: \n')
+        categories = self.api.categories()
+        for cat in categories:
+            print(cat)
+            
+        while True:
+            user_input = input('\nPlease input category: ')
+            if user_input not in categories:
+                print('Error, not proper input. Please try again.')
+            else:
+                #print("\nJoke in category, ", user_input, " is:\n")    
+                #c_joke = self.api.get_random_joke(user_input)
+                #print(c_joke)
+                break
+        
+        print("\nHere is a random joke:\n")
+        joke = self.api.get_random_joke()
+        print(joke)
+
+        
+
 def demo_commands():
     chuck = ChuckNorrisJokesAPI()
     # Calling this twice should only hit the API once (hint: you'll
@@ -71,12 +100,5 @@ def demo_commands():
     jokes = chuck.search_jokes("dork")
 
 if __name__ == '__main__':
-    chuck = ChuckNorrisJokesAPI()
-    print(chuck.categories())
-    #chuck.categories()[0] = "lol"
-    c = chuck.categories()
-    c[0] = 'lol'
-    print(c)
-    print(chuck.categories())
-    print(chuck.categories())
-    
+    main = ChuckNorrisJokesMain()
+    main.run() #all of interactions and ...... 
