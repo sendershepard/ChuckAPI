@@ -1,22 +1,27 @@
 import requests
 import random
 
-class LolWut(object):
-    pass
-
 class ChuckNorrisJokesAPI(object):
     def __init__(self):
-        self = [] # You set up the new object instance here
-    
-    def get_categories(self):
-        """
-        Queries the API for a list of categories, and returns a copy
-        of the list.
-        """
+        self.categories_cache = None 
+ 
+    def _get_categories(self):
+
+        print('Hitting the remote API')
         categories_response = requests.get('https://api.chucknorris.io/jokes/categories')
         c_js = categories_response.json()
 
         return (c_js)
+
+    def categories(self): #Public method
+        """
+        Queries the API for a list of categories, and returns a copy
+        of the list.
+        """
+        if not self.categories_cache: 
+            self.categories_cache = self._get_categories() #_ means private method
+
+        return self.categories_cache.copy()
 
     def get_random_joke(self, category=None):
         """
@@ -55,8 +60,8 @@ def demo_commands():
     chuck = ChuckNorrisJokesAPI()
     # Calling this twice should only hit the API once (hint: you'll
     # need to store the results on the object instance of self)
-    categories = chuck.get_categories()
-    categories = chuck.get_categories()
+    categories = chuck.categories()
+    categories = chuck.categories()
     # These should both work
     joke = chuck.get_random_joke()
     joke = chuck.get_random_joke(categories[0])
@@ -64,3 +69,14 @@ def demo_commands():
     joke = chuck.get_random_joke("does-not-exist")
     # And this should obviously work
     jokes = chuck.search_jokes("dork")
+
+if __name__ == '__main__':
+    chuck = ChuckNorrisJokesAPI()
+    print(chuck.categories())
+    #chuck.categories()[0] = "lol"
+    c = chuck.categories()
+    c[0] = 'lol'
+    print(c)
+    print(chuck.categories())
+    print(chuck.categories())
+    
