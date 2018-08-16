@@ -39,14 +39,13 @@ class ChuckNorrisJokesAPI(object):
         else:
             response = requests.get('https://api.chucknorris.io/jokes/random')
 
-        r_js = response.json()['value']
+        r_js = response.json()
 
         return (r_js)
  
     def search_jokes(self, query):
         """
-        For now, just do the search and return the raw results!
-        We'll make this more powerful in the future! :)
+        For now, just search and return the raw results!
         """
         payload = {'query': query}
         query = requests.get('https://api.chucknorris.io/jokes/search', params=payload)
@@ -63,27 +62,57 @@ class ChuckNorrisJokesMain(object):
         self.api = ChuckNorrisJokesAPI()
 
     def run(self):
-
+        """
+        Calling the categories so that the user can chose from.
+        """
         print('\nHere are the categories to chose from: \n')
         categories = self.api.categories()
         for cat in categories:
             print(cat)
-            
+
+        """
+        Calling the get_random_joke with user input.
+        """
         while True:
             user_input = input('\nPlease input category: ')
             if user_input not in categories:
                 print('Error, not proper input. Please try again.')
             else:
-                #print("\nJoke in category, ", user_input, " is:\n")    
-                #c_joke = self.api.get_random_joke(user_input)
-                #print(c_joke)
+                print("\nA random joke in category, '", user_input, "' is:\n")    
+                c_joke = self.api.get_random_joke(user_input)
+                print(c_joke['value'])
                 break
-        
+
         print("\nHere is a random joke:\n")
         joke = self.api.get_random_joke()
-        print(joke)
+        print(joke['value'])
 
+        """
+        User is prompted to enter a query to search the API's jokes that match the query.
+        If the query returns multiple results the user will be provided a random joke and
+        this joke will be popped off from the stack and will show more if user enters 'y'
+        """
+        while True:
+            user_query = input('\nPlease enter a query: ')
+            query = self.api.search_jokes(user_query)
+            if query == False:
+                print('Sorry, but no matches were found for keyword', user_query, '. Please try again.') 
+            else:
+                break
+
+        s_jokes = query['result']
+        print('\nYour query brought back ', len(s_jokes), ' results.')
         
+        user_input = 'y'
+        while (len(s_jokes)) and (user_input == 'y'):
+            print('We will chose a random joke from the results for you: ')
+            rand = random.randint(0, (len(s_jokes) - 1))
+            print('\n', s_jokes[rand]['value'])
+            del s_jokes[rand]
+
+            print('\nThere are ', len(s_jokes), ' left.')
+            user_input = input('\n Do you want to another? "y" or "n"')
+
 
 def demo_commands():
     chuck = ChuckNorrisJokesAPI()
@@ -101,4 +130,4 @@ def demo_commands():
 
 if __name__ == '__main__':
     main = ChuckNorrisJokesMain()
-    main.run() #all of interactions and ...... 
+    main.run()
