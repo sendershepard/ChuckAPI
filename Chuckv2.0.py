@@ -1,7 +1,17 @@
 import requests
 import random
 
+
+class ChuckAPIException(Exception):
+    pass
+
+
+class InvalidCategory(ChuckAPIException):
+    pass
+
+
 class ChuckNorrisJokesAPI(object):
+    BASE_URI = 'https://api.chucknorris.io/jokes'
     def __init__(self):
         self.categories_cache = None 
  
@@ -9,11 +19,11 @@ class ChuckNorrisJokesAPI(object):
         """
         Private function that hits the remote API
         """
-        #print("Hitting the remote API")
-        categories_response = requests.get('https://api.chucknorris.io/jokes/categories')
-        c_js = categories_response.json()
+        response = requests.get(self.BASE_URI + '/categories')
+        if response.status_code != 200:
+            return None 
 
-        return (c_js)
+        return response.json()
 
     def categories(self):
         """
@@ -24,37 +34,37 @@ class ChuckNorrisJokesAPI(object):
             self.categories_cache = self._get_categories() 
         return self.categories_cache.copy()
 
-    def get_random_joke(self, category=None):
+    def get_random_joke(self, testing1234= None, category=None):
         """
         Gets a random joke from the API.
 
         If category is present, then we'll only get a random joke from
         the provided category.
         """
+        payload = None
+        
         if category:
+            if category not in self.categories():
+                raise InvalidCategory("%r is not a valid category" % category)
             payload = {'category': category}
-            response = requests.get('https://api.chucknorris.io/jokes/random', params=payload)
-            if response.status_code != 200:
-                return False
-        else:
-            response = requests.get('https://api.chucknorris.io/jokes/random')
+        
+        response = requests.get(self.BASE_URI + '/random', params=payload) 
+        if response.status_code != 200:
+            return None 
 
-        r_js = response.json()
+        return response.json()
 
-        return (r_js)
  
     def search_jokes(self, query):
         """
         For now, just search and return the raw results!
         """
         payload = {'query': query}
-        query = requests.get('https://api.chucknorris.io/jokes/search', params=payload)
-        if query.status_code != 200:
-            return False 
+        response = requests.get(self.BASE_URI +  '/search', params=payload)
+        if response.status_code != 200:
+            return None 
 
-        s_js = query.json()
-
-        return (s_js)
+        return response.json()
 
 class ChuckNorrisJokesMain(object):
 
@@ -79,7 +89,7 @@ class ChuckNorrisJokesMain(object):
                 print('Error, not proper input. Please try again.')
             else:
                 print("\nA random joke in category, '", user_input, "' is:\n")    
-                c_joke = self.api.get_random_joke(user_input)
+                c_joke = self.api.get_random_joke(category = user_input)
                 print(c_joke['value'])
                 break
 
@@ -95,7 +105,7 @@ class ChuckNorrisJokesMain(object):
         while True:
             user_query = input('\nPlease enter a query: ')
             query = self.api.search_jokes(user_query)
-            if query == False:
+            if query is None:
                 print('Sorry, but no matches were found for keyword', user_query, '. Please try again.') 
             else:
                 break
