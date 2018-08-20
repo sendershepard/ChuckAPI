@@ -13,17 +13,24 @@ class InvalidCategory(ChuckAPIException):
 class ChuckNorrisJokesAPI(object):
     BASE_URI = 'https://api.chucknorris.io/jokes'
     def __init__(self):
-        self.categories_cache = None 
+        self.categories_cache = None
+
+    def _link(self, kind=None, payload=None):
+        """
+        Refacturing code to create a link definition that will bring the json
+        if link responds as found, else None is returned.
+        """
+        self.response = requests.get(self.BASE_URI + kind, params=payload)
+        if self.response.status_code != 200:
+            return None
+
+        return self.response.json()
  
     def _get_categories(self):
         """
         Private function that hits the remote API
         """
-        response = requests.get(self.BASE_URI + '/categories')
-        if response.status_code != 200:
-            return None 
-
-        return response.json()
+        return self._link(kind='/categories', payload=None)
 
     def categories(self):
         """
@@ -31,10 +38,11 @@ class ChuckNorrisJokesAPI(object):
         of the list.
         """
         if not self.categories_cache: 
-            self.categories_cache = self._get_categories() 
+            self.categories_cache = self._get_categories()
+            
         return self.categories_cache.copy()
 
-    def get_random_joke(self, testing1234= None, category=None):
+    def get_random_joke(self, testing1234=None, category=None):
         """
         Gets a random joke from the API.
 
@@ -48,23 +56,16 @@ class ChuckNorrisJokesAPI(object):
                 raise InvalidCategory("%r is not a valid category" % category)
             payload = {'category': category}
         
-        response = requests.get(self.BASE_URI + '/random', params=payload) 
-        if response.status_code != 200:
-            return None 
-
-        return response.json()
+        return self._link('/random',payload)
 
  
     def search_jokes(self, query):
         """
         For now, just search and return the raw results!
         """
-        payload = {'query': query}
-        response = requests.get(self.BASE_URI +  '/search', params=payload)
-        if response.status_code != 200:
-            return None 
+        return  self._link('/search', payload={'query': query}) 
 
-        return response.json()
+
 
 class ChuckNorrisJokesMain(object):
 
