@@ -2,11 +2,11 @@ import requests
 import random
 
 
-class ChuckAPIException(Exception):
+class ChuckAPIError(Exception):
     pass
 
 
-class InvalidCategory(ChuckAPIException):
+class InvalidCategoryError(ChuckAPIError):
     pass
 
 
@@ -53,7 +53,7 @@ class ChuckNorrisJokesAPI(object):
         
         if category:
             if category not in self.categories():
-                raise InvalidCategory("%r is not a valid category" % category)
+                raise InvalidCategoryError("%r is not a valid category" % category)
             payload = {'category': category}
         
         return self._link('/random',payload)
