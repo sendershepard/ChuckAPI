@@ -3,46 +3,46 @@ import random
 
 
 class ChuckAPIError(Exception):
+    """ Base class for exceptions in this API. """
     pass
 
 
-class InvalidCategoryError(ChuckAPIError):
-    pass
+class InvalidCategoryError(ChuckAPIError): 
+    """ Exceptions raised for errors in input. """
+    pass 
 
 
 class ChuckNorrisJokesAPI(object):
     BASE_URI = 'https://api.chucknorris.io/jokes'
+    
     def __init__(self):
         self.categories_cache = None
 
-    def _link(self, kind=None, payload=None):
+    def _fetch(self, path, payload=None): 
         """
-        Refacturing code to create a link definition that will bring the json
-        if link responds as found, else None is returned.
+        Refacturing code to create a path definition that will bring the json
+        if link responds as found, else raise an exception.
         """
-        self.response = requests.get(self.BASE_URI + kind, params=payload)
+        headers = {"accept": "application/json"}
+        
+        self.response = requests.get(self.BASE_URI + path, headers=headers, params=payload)
         if self.response.status_code != 200:
-            return None
+            raise ChuckAPIError("Failed to obtain a valid kind for %r Status Code: %r" % (path, self.response.status_code)) #None
 
         return self.response.json()
  
     def _get_categories(self):
-        """
-        Private function that hits the remote API
-        """
-        return self._link(kind='/categories', payload=None)
+        """ Private function that hits the remote API. """
+        return self._fetch(path='/categories', payload=None)
 
     def categories(self):
-        """
-        Public method that queries the API for a list of categories, and returns a copy
-        of the list.
-        """
+        """ Fetches the API for a list of categories, and returns a copy. """
         if not self.categories_cache: 
             self.categories_cache = self._get_categories()
             
         return self.categories_cache.copy()
 
-    def get_random_joke(self, testing1234=None, category=None):
+    def get_random_joke(self, category=None):
         """
         Gets a random joke from the API.
 
@@ -56,23 +56,32 @@ class ChuckNorrisJokesAPI(object):
                 raise InvalidCategoryError("%r is not a valid category" % category)
             payload = {'category': category}
         
-        return self._link('/random',payload)
+        return self._fetch('/random',payload)
 
  
     def search_jokes(self, query):
-        """
-        For now, just search and return the raw results!
-        """
-        return  self._link('/search', payload={'query': query}) 
+        """ Just searches and returns the raw results! """
+        return  self._fetch('/search', payload={'query': query}) 
 
 
 
 class ChuckNorrisJokesMain(object):
-
+#build again function
+#create a menu too!
+    
     def __init__(self):
         self.api = ChuckNorrisJokesAPI()
 
     def run(self):
+        self.search_joke()
+
+
+    def random_joke(self):
+        print("\nHere is a random joke:\n")
+        joke = self.api.get_random_joke()
+        print(joke['value'])
+
+    def categories(self):
         """
         Calling the categories so that the user can chose from.
         """
@@ -93,23 +102,21 @@ class ChuckNorrisJokesMain(object):
                 c_joke = self.api.get_random_joke(category = user_input)
                 print(c_joke['value'])
                 break
-
-        print("\nHere is a random joke:\n")
-        joke = self.api.get_random_joke()
-        print(joke['value'])
-
+            
+    def search_joke(self):
         """
         User is prompted to enter a query to search the API's jokes that match the query.
         If the query returns multiple results the user will be provided a random joke and
         this joke will be popped off from the stack and will show more if user enters 'y'
         """
         while True:
-            user_query = input('\nPlease enter a query: ')
-            query = self.api.search_jokes(user_query)
-            if query is None:
-                print('Sorry, but no matches were found for keyword', user_query, '. Please try again.') 
-            else:
-                break
+            try:
+                user_query = input('\nPlease enter a query: ')
+                query = self.api.search_jokes(user_query)
+                if query is None:
+                    print('Sorry, but no matches were found for keyword', user_query, '. Please try again.') 
+                else:
+                    break
 
         s_jokes = query['result']
         print('\nYour query brought back ', len(s_jokes), ' results.')
@@ -123,22 +130,9 @@ class ChuckNorrisJokesMain(object):
 
             print('\nThere are ', len(s_jokes), ' left.')
             user_input = input('\n Do you want to another? "y" or "n"')
+        
 
-
-def demo_commands():
-    chuck = ChuckNorrisJokesAPI()
-    # Calling this twice should only hit the API once (hint: you'll
-    # need to store the results on the object instance of self)
-    categories = chuck.categories()
-    categories = chuck.categories()
-    # These should both work
-    joke = chuck.get_random_joke()
-    joke = chuck.get_random_joke(categories[0])
-    # You should handle this error case
-    joke = chuck.get_random_joke("does-not-exist")
-    # And this should obviously work
-    jokes = chuck.search_jokes("dork")
-
+""" Main """
 if __name__ == '__main__':
     main = ChuckNorrisJokesMain()
     main.run()
