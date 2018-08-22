@@ -27,7 +27,7 @@ class ChuckNorrisJokesAPI(object):
         
         self.response = requests.get(self.BASE_URI + path, headers=headers, params=payload)
         if self.response.status_code != 200:
-            raise ChuckAPIError("Failed to obtain a valid kind for %r Status Code: %r" % (path, self.response.status_code)) #None
+            raise ChuckAPIError("Failed to obtain a valid kind for %r Status Code: %r" % (path, self.response.status_code))
 
         return self.response.json()
  
@@ -66,33 +66,32 @@ class ChuckNorrisJokesAPI(object):
 
 
 class ChuckNorrisJokesMain(object):
-#build again function
-#create a menu too!
-    
     def __init__(self):
         self.api = ChuckNorrisJokesAPI()
 
     def run(self):
-        self.search_joke()
+        print("\n***Welcome to the Chuck Norris (satirical) facts page!***")
+
+        user_input = 'y'
+        while(user_input == 'y'):
+            self.chuck_menu()
+            user_input = input('\n Do you want to go back to the main menu? "y" or "n"')
+
+        print("\n***Thank you for visiting the Chuck Norris (satirical) facts page!***")
 
 
     def random_joke(self):
         print("\nHere is a random joke:\n")
-        joke = self.api.get_random_joke()
-        print(joke['value'])
+        print(self.api.get_random_joke()['value'])
 
     def categories(self):
-        """
-        Calling the categories so that the user can chose from.
-        """
+        """ Calling the categories so that the user can chose from. """
         print('\nHere are the categories to chose from: \n')
         categories = self.api.categories()
         for cat in categories:
             print(cat)
 
-        """
-        Calling the get_random_joke with user input.
-        """
+        """ Calling the get_random_joke based on category. """
         while True:
             user_input = input('\nPlease input category: ')
             if user_input not in categories:
@@ -113,11 +112,13 @@ class ChuckNorrisJokesMain(object):
             try:
                 user_query = input('\nPlease enter a query: ')
                 query = self.api.search_jokes(user_query)
-                if query is None:
-                    print('Sorry, but no matches were found for keyword', user_query, '. Please try again.') 
-                else:
-                    break
-
+                if type(query) != dict:
+                    raise ChuckAPIError
+                break
+            except ChuckAPIError:
+                print("\n'Sorry, but no matches were found for keyword", user_query, ". Please try again.")
+            
+            
         s_jokes = query['result']
         print('\nYour query brought back ', len(s_jokes), ' results.')
         
@@ -130,6 +131,36 @@ class ChuckNorrisJokesMain(object):
 
             print('\nThere are ', len(s_jokes), ' left.')
             user_input = input('\n Do you want to another? "y" or "n"')
+
+    def chuck_menu(self):
+        print("\nPlease pick from the Menu below: ")
+        print("\nFor a random fact enter: 1")
+        print("For a random fact based on category enter: 2")
+        print("To search a fact using a key-word enter: 3\n")
+
+        entries=["1", "2" ,"3"]
+        while True:
+            ans = self.prompt_user(prompt="Please pick a number",
+                                   reminder="Input must match the options!",
+                                   entries=entries)
+            if ans in entries:
+                break
+            
+        if ans == "1":
+            self.random_joke()
+        elif ans == "2":
+            self.categories()
+        elif ans == "3":
+            self.search_joke()
+
+    def prompt_user(self, prompt, reminder=None, entries=None):
+        while True:
+            user_answer = input(prompt)
+            if user_answer in entries:
+                return user_answer
+            else:
+                print(reminder)
+                return False
         
 
 """ Main """
